@@ -66,6 +66,7 @@ export async function loginUser(req, res) {
       { expiresIn: "1d" }
     );
 
+    
     return res.json({
       message: "Login Successful...",
       token: token,
