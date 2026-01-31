@@ -65,7 +65,7 @@ export async function createProduct (req, res){
 
     } catch (error) {
         res.status(500).json({
-            message : "Error Creating product...", error: error
+            message : "Error Creating product", error: error
         });
     }
 }
