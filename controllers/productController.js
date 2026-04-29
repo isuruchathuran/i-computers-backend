@@ -73,7 +73,7 @@ export async function createProduct (req, res){
 
 //getProduct
 export async function getProducts(req, res) {
-    console.log("Get products")
+    console.log("Get products by id api called")
     try {
         if(isAdmin(req)){
             const products = await Product.find();
