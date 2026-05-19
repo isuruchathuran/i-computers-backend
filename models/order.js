@@ -47,39 +47,45 @@ const OrderSchema = new mongoose.Schema({
     required: true,
   },
 
-  phoneNumber: {
+  phone: {
     type: String,
     required: true,
   },
 
-  items: [
-    {
-      productId: {
-        type: String,
-        required: true,
-      },
+  items: {
+    type: [
+      {
+        productId: {
+          type: String,
+          required: true,
+        },
 
-      name: {
-        type: String,
-        required: true,
-      },
+        name: {
+          type: String,
+          required: true,
+        },
 
-      labeledPrice: {
-        type: Number,
-        required: true,
-      },
+        labelledPrice: {
+          type: Number,
+        },
 
-      image: {
-        type: String,
-        default: "https://via.placeholder.com/150",
-      },
+        price: {
+          type: Number,
+          required: true,
+        },
 
-      qty: {
-        type: Number,
-        required: true,
-      },
-    },
-  ],
+        image : {
+          type: String,
+          default: "https://via.placeholder.com/150"
+        },
+
+        qty : {
+          type: Number,
+          required: true,
+        }
+      }
+    ]
+  },
 
   total: {
     type: Number,
@@ -98,8 +104,8 @@ const OrderSchema = new mongoose.Schema({
 
   notes: {
     type: String,
-  },
-});
+  }
+})
 
 const Order = mongoose.model("Order", OrderSchema);
 

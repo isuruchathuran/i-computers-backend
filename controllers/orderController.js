@@ -1,126 +1,131 @@
 import Order from "../models/order.js";
 import Product from "../models/product.js";
 
-export async function createOrder(req, res) {
+export async function createOrder (req, res) {
+  // ORD000001
+  // ORD000029
+
+  if (req.user == null) {
+    res.status(401).json({ message: "Unauthorized. Please log in to place an order." });
+    return;
+  }
 
   try {
-
-    if (!req.user) {
-      return res.status(401).json({
-        message: "Unauthorized user",
-      });
-    }
-
-    if (!req.body.items || req.body.items.length === 0) {
-      return res.status(400).json({
-        message: "No items found",
-      });
-    }
-
     const orderData = {
-
       orderId: "ORD000001",
-
       firstName: req.body.firstName,
-
       lastName: req.body.lastName,
-
       addressLine1: req.body.addressLine1,
-
       addressLine2: req.body.addressLine2,
-
       city: req.body.city,
-
-      Country: req.body.Country,
-
+      country: req.body.country,
       postalCode: req.body.postalCode,
-
-      email: req.user?.email,
-
-      phone: req.body.phone,
-
+      email: req.user.email,
       items: [],
-
-      total: 0,
+      phone: req.body.phone,
+      total: 0
     };
+
+    if (orderData.firstName == "") {
+      orderData.firstName = req.user.firstName
+    }
+
+    if (orderData.lastName == "") {
+      orderData.lastName = req.user.lastName
+    }
+
+    if (orderData.addressLine1 == "") {
+      res.status(400).json({ message: "Address Line 1 is required" })
+      return
+    }
+
+    if (orderData.addressLine2 == "") {
+      res.status(400).json({ message: "Address Line 2 is required" })
+      return
+    }
+
+    if (orderData.city == "") {
+      res.status(400).json({ message: "City is required" })
+      return
+    }
+
+    if (orderData.country == "") {
+      res.status(400).json({ message: "Country is required" })
+      return
+    }
+
+    if (orderData.postalCode == "") {
+      res.status(400).json({ message: "PostalCode is required" })
+      return
+    }
+
+
 
     const lastOrder = await Order.findOne().sort({ date: -1 });
 
+
+
     if (lastOrder != null) {
-
-      const lastOrderId = lastOrder.orderId;
-
-      const lastOrderNumberInString = lastOrderId.replace("ORD", "");
-
-      const lastOrderNumber = parseInt(lastOrderNumberInString);
-
-      const newOrderNumber = lastOrderNumber + 1;
-
-      const newOrderNumberInString = newOrderNumber
-        .toString()
-        .padStart(6, "0");
-
-      orderData.orderId = "ORD" + newOrderNumberInString;
+      const lastOrderId = lastOrder.orderId; // "ORD000029"
+      const lastOrderNumberInString = lastOrderId.replace("ORD", ""); // "000029"
+      const lastOrderNumber = parseInt(lastOrderNumberInString); // 29
+      const newOrderNumber = lastOrderNumber + 1; // 30
+    
+      // padstart(10, "0") => "0000000030"
+      const newOrderNumberInString = newOrderNumber.toString().padStart(6, "0"); // "000030"
+      orderData.orderId = "ORD" + newOrderNumberInString; // "ORD000030"
+      
     }
 
     for (let i = 0; i < req.body.items.length; i++) {
+      const item = req.body.items[i]
 
-      const item = req.body.items[i];
-
-      const product = await Product.findOne({
-        productId: item.productId,
-      });
-
+      const product = await Product.findOne({ productId: item.productId })
       if (product == null) {
-
-        return res.status(404).json({
-          message: "Product not found",
-        });
+        res.status(404).json({ message: "Product with id " + item.productId + " not found. please remove it from your cart and try again." });
+        return
       }
 
-      if (product.qty < item.qty) {
-
-        return res.status(400).json({
-          message: "Not enough quantity available",
-        });
+      if (product.isVisible == false) {
+        res.status(404).json({ message: "Product with id " + item.productId + " is not available. please remove it from your cart and try again." });
+        return
       }
+
+      // if(product.qty < item.qty) {
+      //   res.status(400).json({ message: "Only " + product.qty + " items of product with id " + item.productId + " are in stock. please reduce the quantity and try again." });
+      //   return
+      // }
+
 
       orderData.items.push({
-
         productId: product.productId,
-
         name: product.name,
+        price: product.price,
+        labelledPrice: product.labelledPrice,
+        Image: product.images[0],
+        qty: item.qty
+      })
 
-        labeledPrice: product.labeledPrice,
-
-        image: product.images?.[0],
-
-        qty: item.qty,
-      });
-
-      orderData.total += product.price * item.qty;
+      orderData.total += product.price * item.qty
     }
-
+  
     const order = new Order(orderData);
-
     await order.save();
 
-    res.status(201).json({
+     // reduce the qty of the product in the database
+    // for (let i = 0; i < orderData.items.length; i++) {
+        
+    //     const item = orderData.items[i];
+    //     await Product.updateOne({ productId: item.productId }, { $inc: { qty: -item.qty } })
+    //   }
 
-      message: "Order created successfully",
+    res.status(201).json({ message: "Order created successfully", orderId : orderData.orderId });
 
-      orderId: orderData.orderId,
-    });
-
-  } catch (error) {
-
-    console.log("Error creating order", error);
-
-    res.status(500).json({
-
-      message: "Error creating order",
-
-      error: error.message,
-    });
+  } catch (error) { 
+    console.log("Error creating order", error)
+    res.status(500).json({ message: "Error creating order", error: error });
   }
+
+
+
 }
