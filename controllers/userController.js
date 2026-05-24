@@ -63,7 +63,7 @@ export async function loginUser(req, res) {
         isEmailVerified: user.isEmailVerified,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "30d" }
     );
 
     
