@@ -103,12 +103,13 @@ export async function createOrder (req, res) {
         name: product.name,
         price: product.price,
         labelledPrice: product.labelledPrice,
-        Image: product.images[0],
+        image: product.images[0],
         qty: item.qty
       })
 
       orderData.total += product.price * item.qty
     }
+    console.log(orderData.items);
   
     const order = new Order(orderData);
     await order.save();
@@ -162,7 +163,7 @@ export async function getOrders(req,res) {
 
       const numberOfPages = Math.ceil(numberOfOrders / pageSize) 
 
-      const orders = await Order.fing({ email: req.user.email }).sort({ date : -1 }).skip(( pageNumber - 1 ) * pageSize).limit(pageSize)
+      const orders = await Order.find({ email: req.user.email }).sort({ date : -1 }).skip(( pageNumber - 1 ) * pageSize).limit(pageSize)
 
       res.json({
         orders: orders,
