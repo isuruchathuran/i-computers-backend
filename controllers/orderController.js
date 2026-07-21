@@ -24,6 +24,7 @@ export async function createOrder (req, res) {
       email: req.user.email,
       items: [],
       phone: req.body.phone,
+      paymentMethod: req.body.paymentMethod || "Cash on Delivery",
       total: 0
     };
 
@@ -92,14 +93,15 @@ export async function createOrder (req, res) {
         return
       }
 
-      // if(product.qty < item.qty) {
-      //   res.status(400).json({ message: "Only " + product.qty + " items of product with id " + item.productId + " are in stock. please reduce the quantity and try again." });
-      //   return
-      // }
+      if(product.qty < item.qty) {
+        res.status(400).json({ message: "Only " + product.qty + " items of product with id " + item.productId + " are in stock. please reduce the quantity and try again." });
+        return
+      }
 
 
       orderData.items.push({
         productId: product.productId,
+        productCode: product.productCode || "CODE-NA",
         name: product.name,
         price: product.price,
         labelledPrice: product.labelledPrice,
@@ -115,11 +117,10 @@ export async function createOrder (req, res) {
     await order.save();
 
      // reduce the qty of the product in the database
-    // for (let i = 0; i < orderData.items.length; i++) {
-        
-    //     const item = orderData.items[i];
-    //     await Product.updateOne({ productId: item.productId }, { $inc: { qty: -item.qty } })
-    //   }
+    for (let i = 0; i < orderData.items.length; i++) {
+        const item = orderData.items[i];
+        await Product.updateOne({ productId: item.productId }, { $inc: { qty: -item.qty } })
+    }
 
     res.status(201).json({ message: "Order created successfully", orderId : orderData.orderId });
 

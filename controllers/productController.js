@@ -12,20 +12,22 @@ export async function createProduct (req, res){
     }
 
     try {
-        const existingProduct = await Product.findOne({
-            productId : req.body.productId
-        });
-
-        if(existingProduct){
-            res.status(400).json({
-                message : "Product with given productId already exists"
-            });
-            return;
+        // Auto-generate Product Code (PRD-XXXX)
+        const lastProduct = await Product.findOne({ productCode: { $exists: true, $ne: null } }).sort({ createdAt: -1 });
+        let nextNumber = 1;
+        if (lastProduct && lastProduct.productCode) {
+            const numericPart = parseInt(lastProduct.productCode.replace("PRD-", ""));
+            if (!isNaN(numericPart)) {
+                nextNumber = numericPart + 1;
+            }
         }
+        const productCode = "PRD-" + nextNumber.toString().padStart(4, "0");
 
         const data = {};
-
-        data.productId  = req.body.productId;
+        
+        // Keep internal productId unique (using random string)
+        data.productId = "ID-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 5);
+        data.productCode = productCode;
 
         if(req.body.name == null){
             res.status(400).json({message : "Product name is required"});
@@ -55,6 +57,9 @@ export async function createProduct (req, res){
         data.isVisible = typeof req.body.isVisible === "boolean" ? req.body.isVisible : true;
 
         data.model = req.body.model || "Standard";
+        data.brand = req.body.brand || "Generic";
+        data.qty = req.body.qty != null ? req.body.qty : 100;
+        data.specifications = req.body.specifications || [];
 
         const newProduct = new Product(data);
         await newProduct.save();
@@ -152,6 +157,9 @@ export async function updateProduct(req, res) {
         data.isVisible = typeof req.body.isVisible === "boolean" ? req.body.isVisible : true;
 
         data.model = req.body.model || "Standard";
+        data.brand = req.body.brand || "Generic";
+        data.qty = req.body.qty != null ? req.body.qty : 100;
+        data.specifications = req.body.specifications || [];
 
         await Product.updateOne({ productId: productId }, data);
 
@@ -203,6 +211,7 @@ export async function searchProducts(req, res){
         
         let filter = {
             $or: [
+                { productCode: regex },
                 { name: regex },
                 { altNames: regex },
                 { category: regex },

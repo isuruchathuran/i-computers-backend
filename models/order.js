@@ -60,6 +60,10 @@ const OrderSchema = new mongoose.Schema({
           required: true,
         },
 
+        productCode: {
+          type: String,
+        },
+
         name: {
           type: String,
           required: true,
@@ -104,8 +108,13 @@ const OrderSchema = new mongoose.Schema({
 
   notes: {
     type: String,
+  },
+
+  paymentMethod: {
+    type: String,
+    default: "Cash on Delivery",
   }
-})
+}, { timestamps: true });
 
 const Order = mongoose.model("Order", OrderSchema);
 

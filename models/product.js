@@ -8,6 +8,13 @@ const ProductSchema = new mongoose.Schema(
             unique: true
         },
 
+        productCode: {
+            type: String,
+            unique: true,
+            sparse: true
+        },
+
+
         name: {
             type: String,
             required: true
@@ -58,12 +65,21 @@ const ProductSchema = new mongoose.Schema(
             default: "Standard"
         },
 
-        qty : {
-            type: Number,
-            default: 100
-        }
+    qty : {
+        type: Number,
+        default: 100
+    },
+
+    specifications: {
+        type: [
+            {
+                key: { type: String, required: true },
+                value: { type: String, required: true }
+            }
+        ],
+        default: []
     }
-);
+}, { timestamps: true });
 
 const Product = mongoose.model("Product", ProductSchema);
 

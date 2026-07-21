@@ -7,6 +7,9 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import orderRouter from './router/orderRouter.js'
 import dashboardRouter from './router/dashboardRouter.js'
+import categoryRouter from './router/categoryRouter.js'
+import cartRouter from './router/cartRouter.js'
+import reviewRouter from './router/reviewRouter.js'
 
 dotenv.config()
 
@@ -37,6 +40,9 @@ app.use("/api/users" ,userRouter)
 app.use("/api/products", productRouter)
 app.use("/api/orders", orderRouter)
 app.use("/api/dashboard", dashboardRouter)
+app.use("/api/categories", categoryRouter)
+app.use("/api/cart", cartRouter)
+app.use("/api/reviews", reviewRouter)
 
 app.listen(3000,
     ()=>{
