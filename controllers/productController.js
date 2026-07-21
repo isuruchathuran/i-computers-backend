@@ -65,7 +65,7 @@ export async function createProduct (req, res){
 
     } catch (error) {
         res.status(500).json({
-            message : "Error Creating product", error: error
+            message : "Error Creating product", error: error.message
         });
     }
 }
@@ -84,7 +84,7 @@ export async function getProducts(req, res) {
         }
     } catch (error) {
         res.status(500).json({
-            message : "Error fetching products", error: error
+            message : "Error fetching products", error: error.message
         });
     }
 }
@@ -105,7 +105,7 @@ export async function deletePrpduct(req, res){
         });
     } catch (error) {
         res.status(500).json({
-            message : "Error deleting product.", error: error            
+            message : "Error deleting product.", error: error.message            
         });
     }
 }
@@ -161,7 +161,7 @@ export async function updateProduct(req, res) {
 
     } catch (error) {
         res.status(500).json({
-            message : "Error updating product...", error: error
+            message : "Error updating product...", error: error.message
         });
     }
 }
@@ -172,9 +172,9 @@ export async function getProductById(req, res){
         const product = await Product.findOne({productId: productId});
 
         if(product == null){
-            res.status(404({
+            res.status(404).json({
                 message : "Product not found."
-            }));
+            });
             return;
         }
 
@@ -191,11 +191,33 @@ export async function getProductById(req, res){
 
     } catch (error) {
         res.status(500).json({
-            message : "Error fetching product." , error : error
+            message : "Error fetching product." , error : error.message
         });
     }
 }
 
 export async function searchProducts(req, res){
-    
+    try {
+        const query = req.query.q || "";
+        const regex = new RegExp(query, "i");
+        
+        let filter = {
+            $or: [
+                { name: regex },
+                { altNames: regex },
+                { category: regex },
+                { brand: regex },
+                { description: regex }
+            ]
+        };
+
+        if (!isAdmin(req)) {
+            filter.isVisible = true;
+        }
+
+        const products = await Product.find(filter);
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(500).json({ message: "Error searching products", error: error.message });
+    }
 }

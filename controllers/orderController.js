@@ -124,8 +124,7 @@ export async function createOrder (req, res) {
     res.status(201).json({ message: "Order created successfully", orderId : orderData.orderId });
 
   } catch (error) { 
-    console.log("Error creating order", error)
-    res.status(500).json({ message: "Error creating order", error: error });
+    res.status(500).json({ message: "Error creating order", error: error.message });
   }
 }
 
@@ -159,7 +158,7 @@ export async function getOrders(req,res) {
       })
 
     } else {
-      const numberOfOrders = await Order.countDocuments()
+      const numberOfOrders = await Order.countDocuments({ email: req.user.email })
 
       const numberOfPages = Math.ceil(numberOfOrders / pageSize) 
 
@@ -174,7 +173,7 @@ export async function getOrders(req,res) {
     
   } catch(error) {
       console.log("Error fetching orders", error)
-      res.status(500).json({ message : "Error fetching orders", error : error })
+      res.status(500).json({ message : "Error fetching orders", error : error.message })
     }
 
 }
@@ -191,7 +190,7 @@ export async function updateOrderStatusAndNotes(req,res) {
     } catch (error) {
       
       console.log("Error updating order Status and Notes", error)
-      res.status(500).json({ message : "Error updating order Status and Notes", error : error })
+      res.status(500).json({ message : "Error updating order Status and Notes", error : error.message })
       return
 
     }

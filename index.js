@@ -6,6 +6,7 @@ import AuthorizeUser from './lib/jwtMiddleware.js'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import orderRouter from './router/orderRouter.js'
+import dashboardRouter from './router/dashboardRouter.js'
 
 dotenv.config()
 
@@ -16,7 +17,8 @@ async function connectMongoDB() {
     await mongoose.connect(mongoURI);
     console.log("Connected to MongoDB...");
   } catch (error) {
-    console.error("Error Connecting to MongoDB....", error);
+    console.error("CRITICAL ERROR: Failed to connect to MongoDB.", error.message);
+    console.error("Please check your MONGO_URL in the .env file.");
   }
 }
 
@@ -34,7 +36,7 @@ app.use(AuthorizeUser)
 app.use("/api/users" ,userRouter)
 app.use("/api/products", productRouter)
 app.use("/api/orders", orderRouter)
-   
+app.use("/api/dashboard", dashboardRouter)
 
 app.listen(3000,
     ()=>{
